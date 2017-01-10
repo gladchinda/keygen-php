@@ -1,0 +1,21 @@
+{
+    "name": "gladcodes/keygen",
+    "description": "A fluent PHP random key generator.",
+    "keywords": ["PHP", "random", "key", "generator", "keygen", "key generator"],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Glad Chinda",
+            "email": "gladxeqs@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Keygen\\": "src/Keygen"
+        }
+    }
+}
