@@ -37,10 +37,15 @@ use Keygen\Keygen;
 printf("Your appID is %.0f", Keygen::numeric(12)->generate()); // Your appID is 878234290135
 ```
 
+## Usage and Documentation
+- [Complete Usage Guide]
+- [Keygen API Documentation]
+
 ## Todos
 - Write tests
 
 ## License
 The Keygen package is covered by the `MIT` License.
 
-[Composer]: <https://getcomposer.org>
+[Complete Usage Guide]: <https://github.com/gladchinda/keygen-php/wiki/Usage>
+[Keygen API Documentation]: <https://github.com/gladchinda/keygen-php/wiki/Documentation>
