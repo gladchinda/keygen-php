@@ -1,6 +1,8 @@
 # Keygen
 > A fluent PHP random key generator.
 
+[![Packagist](https://img.shields.io/packagist/v/gladcodes/keygen.svg)](https://packagist.org/packages/gladcodes/keygen) [![Packagist](https://img.shields.io/packagist/dt/gladcodes/keygen.svg)](https://packagist.org/packages/gladcodes/keygen) [![Packagist](https://img.shields.io/packagist/l/gladcodes/keygen.svg)]()
+
 Keygen is a PHP package that generates random character sequences known as *keys*. The package ships with built-in key generators for four key types namely: *numeric*, *alphanumeric*, *token* and *byte*. Its implementation effectively combines simplicity and expressiveness.
 
 ## Installation
