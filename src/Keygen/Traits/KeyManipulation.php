@@ -156,10 +156,9 @@ trait KeyManipulation
 	protected function __overloadMethods($method, $args)
 	{
 		$_method = strtolower($method);
-		$affixed = call_user_func_array(array($this, 'affix'), array_merge([$_method], $args));
 
-		if ($affixed) {
-			return $this;
+		if (in_array($_method, ['prefix', 'suffix'])) {
+			return call_user_func_array(array($this, 'affix'), array_merge([$_method], $args));
 		}
 
 		if ($_method == 'length') {

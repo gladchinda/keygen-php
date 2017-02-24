@@ -26,6 +26,26 @@ trait GeneratorMutation
 	protected $mutates = [];
 
 	/**
+	 * Object difference comparator using array_diff callback.
+	 * 
+	 * @param array $array1
+	 * @param array $array2
+	 * @return array
+	 */
+	private static function objectDiffInArrays($array1, $array2)
+	{
+		return array_udiff($array1, $array2, function($a, $b) {
+			if ($a === $b) {
+				return 0;
+			} elseif ($a < $b) {
+				return -1;
+			} elseif ($a > $b) {
+				return 1;
+			}
+		});
+	}
+
+	/**
 	 * Add mutable generators to the mutates collection
 	 * 
 	 * @param mixed $objects
@@ -47,7 +67,7 @@ trait GeneratorMutation
 			throw new InvalidArgumentException(sprintf('Mutable objects must be instances of %s.', AbstractGenerator::class));
 		}
 		
-		$this->mutates = array_merge(array_diff($this->mutates, $collect), $collect);
+		$this->mutates = array_merge(static::objectDiffInArrays($this->mutates, $collect), $collect);
 		
 		return $this;
 	}
@@ -62,7 +82,7 @@ trait GeneratorMutation
 	{
 		$objects = call_user_func_array(array($this, 'flattenArguments'), func_get_args());
 		
-		$this->mutates = array_diff($this->mutates, $objects);
+		$this->mutates = static::objectDiffInArrays($this->mutates, $objects);
 		
 		return $this;
 	}
