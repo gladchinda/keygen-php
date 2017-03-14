@@ -3,7 +3,7 @@
 
 [![Packagist](https://img.shields.io/packagist/v/gladcodes/keygen.svg)](https://packagist.org/packages/gladcodes/keygen) [![Packagist](https://img.shields.io/packagist/dt/gladcodes/keygen.svg)](https://packagist.org/packages/gladcodes/keygen) [![Packagist](https://img.shields.io/packagist/l/gladcodes/keygen.svg)]()
 
-Keygen is a PHP package that generates random character sequences known as *keys*. The package ships with built-in key generators for four key types namely: *numeric*, *alphanumeric*, *token* and *byte*. Its implementation effectively combines simplicity and expressiveness.
+Keygen is a PHP package that generates random character sequences known as *keys*. It is built to provide a simple and expressive interface for flexible key generation. It supports [method chaining], making it possible to write compact implementation codes. The package ships with four built-in key generators namely: *numeric*, *alphanumeric*, *token* and *byte*.
 
 ## Installation
 
@@ -19,7 +19,7 @@ Alternatively, you can manually add the Keygen package to the `composer.json` fi
 ```json
 {
     "require": {
-        "gladcodes/keygen": "~1.1"
+        "gladcodes/keygen": "^1.2.0"
     }
 }
 ```
@@ -43,11 +43,10 @@ printf("Your appID is %.0f", Keygen::numeric(12)->generate()); // Your appID is 
 - [Complete Usage Guide]
 - [Keygen API Documentation]
 
-## Todos
-- Write tests
-
 ## License
 The Keygen package is covered by the `MIT` License.
 
 [Complete Usage Guide]: <https://github.com/gladchinda/keygen-php/wiki/Usage>
+[Composer]: <https://getcomposer.org>
 [Keygen API Documentation]: <https://github.com/gladchinda/keygen-php/wiki/Documentation>
+[method chaining]: <https://en.wikipedia.org/wiki/Method_chaining>
