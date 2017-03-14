@@ -15,7 +15,7 @@ The `AbstractGenerator` class has two direct sub-classes namely:
 
 - `Generator` **class**  
 
-    This is the parent class of all the built-in generators. It provides specialised functionality for _[key exclusions]_ and handling the key generation logic, which includes: applying key transformations and adding affixes to generated keys. See [Generator Class] for more details about the `Generator` class.   
+    This is the parent class of all the built-in generators. It provides specialised functionality for _key exclusions_ and handling the key generation logic, which includes: applying key transformations and adding affixes to generated keys. See [Generator Class] for more details about the `Generator` class.   
 
 
 - `Keygen` **class**   
@@ -82,7 +82,6 @@ The `transformations()` method resets the transformations queue and starts a new
 
 [facade]: <https://en.wikipedia.org/wiki/Facade_pattern>
 [Generator Class]: <./generator.md>
-[key exclusions]: <./key-exclusion.md>
 [Keygen Class]: <./keygen.md>
 [Key Mutations]: <./key-mutation.md>
 [Key Transformations]: <./key-transformation.md>
