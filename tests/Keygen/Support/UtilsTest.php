@@ -34,16 +34,4 @@ final class UtilsTest extends TestCase
 		$fifthCase = Utils::flattenArguments([[[]]]);
 		$this->assertEmpty($fifthCase);
 	}
-
-	/**
-	 * @covers ::arrayDiffWithObjects
-	 */
-	public function testArrayDiffWithObjects()
-	{
-		$std = new \stdClass;
-		$std2 = new \stdClass;
-
-		// $firstCase = Utils::arrayDiffWithObjects(['hello', 1, 'john', -23, '5.67', $std, $std2], ['hello', 'john', 5.67, $std]);
-		// $this->assertEquals([1, -23, '5.67'], $firstCase);
-	}
 }

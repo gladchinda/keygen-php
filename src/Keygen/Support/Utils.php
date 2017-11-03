@@ -33,24 +33,4 @@ class Utils
 
 		return $flat;
 	}
-
-	/**
-	 * Computes array_diff for arrays containing objects.
-	 * 
-	 * @param array $array1
-	 * @param array $array2
-	 * @return array
-	 */
-	public static function arrayDiffWithObjects($array1, $array2)
-	{
-		return array_udiff($array1, $array2, function($a, $b) {
-			if ($a === $b) {
-				return 0;
-			} elseif ($a < $b) {
-				return -1;
-			} elseif ($a > $b) {
-				return 1;
-			}
-		});
-	}
 }

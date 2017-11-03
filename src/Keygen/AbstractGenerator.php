@@ -384,6 +384,9 @@ abstract class AbstractGenerator implements GeneratorInterface
 			}
 		}
 
+		$this->mutables = array_values($this->mutables);
+		$this->immutables = array_values($this->immutables);
+
 		return $this;
 	}
 
@@ -454,17 +457,30 @@ abstract class AbstractGenerator implements GeneratorInterface
 			$notLinked = $this->linkBlocked($obj);
 
 			if ($link) {
+				if ($notLinked) {
+					$this->dontMutates = array_filter($this->dontMutates, function($object) use ($obj) {
+						return $object !== $obj;
+					});
+				}
+
 				$this->mutates = array_merge($this->mutates, $isLinked ? [] : [$obj]);
-				$this->dontMutates = Utils::arrayDiffWithObjects($this->dontMutates, $notLinked ? [$obj] : []);
 			}
 
 			else {
-				$this->mutates = Utils::arrayDiffWithObjects($this->mutables, $isLinked ? [$obj] : []);
+				if ($isLinked) {
+					$this->mutates = array_filter($this->mutates, function($object) use ($obj) {
+						return $object !== $obj;
+					});
+				}
+				
 				$this->dontMutates = array_merge($this->dontMutates, $notLinked ? [] : [$obj]);
 			}
 
-			$transcendLinkage = $link && !$obj->islinked($this);
-			$transcendNoLinkage = !$link && !($obj->notLinked($this) && $obj->islinked($this));
+			$this->mutates = array_values($this->mutates);
+			$this->dontMutates = array_values($this->dontMutates);
+
+			$transcendLinkage = $link && !$obj->isLinked($this);
+			$transcendNoLinkage = !($link || $obj->linkBlocked($this));
 
 			if ($transcendLinkage || $transcendNoLinkage) {
 				$obj->resolveObjectsMutationLinkage([$this], $link);
@@ -533,7 +549,7 @@ abstract class AbstractGenerator implements GeneratorInterface
 
 		if ($propagate) {
 			foreach ($this->mutates as $obj) {
-				if ($obj->isMutable($prop)) {
+				if ($obj->isMutable($prop) && ( $obj->{$prop} !== $this->{$prop} )) {
 					$obj->setPropertyForGenerator($prop, $this->{$prop});
 				}
 			}

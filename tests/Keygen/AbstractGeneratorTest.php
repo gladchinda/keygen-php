@@ -4,7 +4,6 @@ use Keygen\Keygen;
 use Keygen\AbstractGenerator;
 use PHPUnit\Framework\TestCase;
 use Keygen\Generators\NumericGenerator;
-use Keygen\Exceptions\InvalidTransformationKeygenException;
 
 /**
  * @coversDefaultClass Keygen\AbstractGenerator
@@ -237,6 +236,84 @@ final class AbstractGeneratorTest extends TestCase
 		$transforms = ['md5', $this->generator, $substr, new \stdClass, $uppercase];
 
 		$this->generator->transformations($transforms);
+	}
+
+	/**
+	 * @covers ::mutable
+	 * @covers ::immutable
+	 * @covers ::isMutable
+	 * @covers ::isImmutable
+	 * @covers ::resolvePropertiesMutability
+	 */
+	public function testMutableProperties() {
+		$this->assertEquals([], $this->generator->mutables);
+		$this->assertEquals([], $this->generator->immutables);
+
+		$this->generator->mutable('length')->mutable('prefix');
+		$this->assertTrue($this->generator->isMutable('length'));
+		$this->assertTrue($this->generator->isMutable('prefix'));
+		$this->assertFalse($this->generator->isMutable('suffix'));
+		$this->assertEquals(['length', 'prefix'], $this->generator->mutables);
+
+		$this->generator->immutable('length')->immutable('suffix');
+		$this->assertTrue($this->generator->isImmutable('length'));
+		$this->assertTrue($this->generator->isImmutable('suffix'));
+		$this->assertFalse($this->generator->isImmutable('prefix'));
+		$this->assertEquals(['prefix'], $this->generator->mutables);
+		$this->assertEquals(['length', 'suffix'], $this->generator->immutables);
+	}
+
+	/**
+	 * @covers ::mutate
+	 * @covers ::dontMutate
+	 * @covers ::isLinked
+	 * @covers ::linkBlocked
+	 * @covers ::resolveObjectsMutationLinkage
+	 * @covers ::propagatePropertyMutation
+	 * @covers ::setPropertyForGenerator
+	 */
+	public function testObjectMutations() {
+		$generator1 = (new NumericGenerator(10))->mutable('length');
+		$generator2 = (new NumericGenerator(10))->mutable('length', 'prefix');
+
+		$this->generator->mutate($generator2, $generator1);
+
+		$this->assertEquals([$generator2, $generator1], $this->generator->mutates);
+		$this->assertTrue($this->generator->isLinked($generator1));
+		$this->assertTrue($generator2->isLinked($this->generator));
+
+		$this->assertEquals(16, $this->generator->length);
+		$this->assertEquals(10, $generator1->length);
+		$this->assertEquals(10, $generator2->length);
+
+		$this->generator->length(20)->prefix('IMG-');
+
+		$this->assertEquals(20, $this->generator->length);
+		$this->assertEquals(20, $generator1->length);
+		$this->assertEquals(20, $generator2->length);
+
+		$this->assertEquals('IMG-', $this->generator->prefix);
+		$this->assertEquals(null, $generator1->prefix);
+		$this->assertEquals('IMG-', $generator2->prefix);
+
+		$this->generator->dontMutate($generator2);
+
+		$this->assertEquals([$generator1], $this->generator->mutates);
+		$this->assertEquals([$generator2], $this->generator->dontMutates);
+		$this->assertTrue($this->generator->linkBlocked($generator2));
+		$this->assertTrue($generator2->linkBlocked($this->generator));
+
+		$generator1->length(10);
+
+		$this->assertEquals(20, $this->generator->length);
+		$this->assertEquals(10, $generator1->length);
+		$this->assertEquals(20, $generator2->length);
+
+		$this->generator->mutable('length');
+		$generator1->length(24);
+		
+		$this->assertEquals(24, $this->generator->length);
+		$this->assertEquals(24, $generator1->length);
 	}
 
 	/**
