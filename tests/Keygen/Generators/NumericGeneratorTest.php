@@ -4,7 +4,7 @@ use PHPUnit\Framework\TestCase;
 use Keygen\Generators\NumericGenerator;
 
 /**
- * @covers NumericGenerator
+ * @coversDefaultClass NumericGenerator
  */
 final class NumericGeneratorTest extends TestCase
 {
@@ -15,6 +15,10 @@ final class NumericGeneratorTest extends TestCase
 		$this->generator = new NumericGenerator;
 	}
 
+	/**
+	 * @covers ::nzfirst
+	 * @covers ::anyfirst
+	 */
 	public function testNonZeroFirstAttribute()
 	{
 		$this->assertFalse($this->generator->nonZeroFirst);
@@ -26,6 +30,10 @@ final class NumericGeneratorTest extends TestCase
 		$this->assertFalse($this->generator->nonZeroFirst);
 	}
 
+	/**
+	 * @covers ::keygen
+	 * @covers ::generateNumericChars
+	 */
 	public function testKeyGeneration()
 	{
 		$key = $this->generator->generate();

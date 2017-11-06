@@ -4,7 +4,7 @@ use PHPUnit\Framework\TestCase;
 use Keygen\Generators\RandomByteGenerator;
 
 /**
- * @covers RandomByteGenerator
+ * @coversDefaultClass RandomByteGenerator
  */
 final class RandomByteGeneratorTest extends TestCase
 {
@@ -15,6 +15,12 @@ final class RandomByteGeneratorTest extends TestCase
 		$this->generator = new RandomByteGenerator;
 	}
 
+	/**
+	 * @covers ::hex
+	 * @covers ::base64
+	 * @covers ::resetByteOutput
+	 * @covers ::enableByteOutput
+	 */
 	public function testOutputTypes()
 	{
 		$this->assertFalse($this->generator->hex);
@@ -29,6 +35,14 @@ final class RandomByteGeneratorTest extends TestCase
 		$this->assertTrue($this->generator->base64);
 	}
 
+	/**
+	 * @covers ::keygen
+	 * @covers ::bytesAsHex
+	 * @covers ::bytesAsBase64
+	 * @covers ::generateRandomBytes
+	 * @covers ::enabledByteOutput
+	 * @covers ::finishKeyGeneration
+	 */
 	public function testKeyGeneration()
 	{
 		$key = $this->generator->generate();

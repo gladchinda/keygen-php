@@ -11,96 +11,8 @@
 
 namespace Keygen;
 
-use Keygen\Support\Utils;
-use Keygen\Generators\TokenGenerator;
-use Keygen\Generators\NumericGenerator;
-use Keygen\Generators\RandomByteGenerator;
-use Keygen\Generators\AlphaNumericGenerator;
-use Keygen\Exceptions\InvalidGeneratorKeygenException;
-
 class Keygen extends AbstractGenerator
 {
-	/**
-	 * Map of available generator aliases.
-	 * 
-	 * @var array
-	 */
-	protected static $generatorAliases = [
-		TokenGenerator::class 			=> 'token',
-		NumericGenerator::class 		=> 'numeric',
-		RandomByteGenerator::class 		=> ['bytes', 'randomByte'],
-		AlphaNumericGenerator::class 	=> ['alphanum', 'alphaNumeric'],
-	];
-
-	/**
-	 * List of all generator aliases.
-	 * 
-	 * @return array
-	 */
-	protected static function getAllGeneratorAliases()
-	{
-		$aliases = array_values(static::$generatorAliases);
-		$aliases = array_map('strtolower', Utils::flatten($aliases));
-
-		return array_unique($aliases);
-	}
-
-	/**
-	 * Checks if a generator alias exists.
-	 *
-	 * @param string $alias
-	 * @return bool
-	 */
-	protected static function generatorAliasExists($alias)
-	{
-		return in_array(strtolower($alias), static::getAllGeneratorAliases());
-	}
-
-	/**
-	 * Ensures that a generator alias exists.
-	 * 
-	 * @param string $alias
-	 * @throws Keygen\Exceptions\InvalidGeneratorKeygenException
-	 */
-	protected static function assertGeneratorAliasExists($alias)
-	{
-		if (! static::generatorAliasExists($alias)) {
-			throw new InvalidGeneratorKeygenException("Unknown generator alias: {$alias}.");
-		}
-	}
-
-	/**
-	 * Gets the generator class mapped to an alias.
-	 * 
-	 * @param string $alias
-	 * @return string
-	 * 
-	 * @throws Keygen\Exceptions\InvalidGeneratorKeygenException
-	 */
-	protected static function getGeneratorFromAlias($alias)
-	{
-		$generator = null;
-		static::assertGeneratorAliasExists($alias);
-
-		$isValidGenerator = function ($generator) {
-			return class_exists($generator) && is_subclass_of($generator, Generator::class);
-		};
-
-		foreach (static::$generatorAliases as $g => $aliases) {
-
-			if ( in_array(strtolower($alias), array_map('strtolower', (array) $aliases)) ) {
-				$generator = $isValidGenerator($g) ? $g : null;
-				break;
-			}
-		}
-
-		if (! $generator) {
-			throw new InvalidGeneratorKeygenException("Alias({$alias}) refers to invalid generator.");
-		}
-
-		return $generator;
-	}
-
 	/**
 	 * Creates instance of generator from alias.
 	 * 
@@ -112,9 +24,8 @@ class Keygen extends AbstractGenerator
 	 */
 	protected function newGeneratorFromAlias($alias, $length = null)
 	{
-		$generator = static::getGeneratorFromAlias($alias);
-
-		return (new $generator)->mutate($this)
+		return GeneratorFactory::getGeneratorFromAlias($alias)
+			->mutate($this)
 			->length(($length || is_bool($length)) ? $length : $this->length)
 			->prefix($this->prefix)
 			->suffix($this->suffix);
@@ -131,16 +42,16 @@ class Keygen extends AbstractGenerator
 	{
 		$_args = $args;
 
-		if (static::generatorAliasExists($method)) {
+		if (GeneratorFactory::generatorAliasExists($method)) {
 			array_unshift($_args, $method);
 			return call_user_func_array([$this, 'newGeneratorFromAlias'], $_args);
 		}
 
 		$method = strtolower($method);
 
-		$aliases = static::getAllGeneratorAliases();
+		$aliases = GeneratorFactory::getAllGeneratorAliases();
 
-		$methodRegex = sprintf("(%s)((?:[1-9]\d*)|random)?", join('|', $aliases));
+		$methodRegex = sprintf("_?(%s)_?((?:[1-9]\d*)|random)?", join('|', $aliases));
 		$methodRegex = '/'. $methodRegex .'$/';
 
 		if (preg_match($methodRegex, $method, $matches)) {

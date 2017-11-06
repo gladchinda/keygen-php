@@ -4,7 +4,7 @@ use PHPUnit\Framework\TestCase;
 use Keygen\Generators\TokenGenerator;
 
 /**
- * @covers TokenGenerator
+ * @coversDefaultClass TokenGenerator
  */
 final class TokenGeneratorTest extends TestCase
 {
@@ -15,6 +15,9 @@ final class TokenGeneratorTest extends TestCase
 		$this->generator = new TokenGenerator;
 	}
 
+	/**
+	 * @covers ::keygen
+	 */
 	public function testKeyGeneration()
 	{
 		$key = $this->generator->generate();

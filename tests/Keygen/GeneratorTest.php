@@ -5,7 +5,7 @@ use PHPUnit\Framework\TestCase;
 use Keygen\Generators\NumericGenerator;
 
 /**
- * @covers Generator
+ * @coversDefaultClass Generator
  * @covers GeneratorInterface
  */
 final class GeneratorTest extends TestCase
@@ -17,6 +17,16 @@ final class GeneratorTest extends TestCase
 		$this->generator = new NumericGenerator;
 	}
 
+	/**
+	 * @covers ::generate
+	 * @covers ::getKeygenLength
+	 * @covers ::resolveTransformationsFromGenerationArguments
+	 * @covers ::resolveInclusiveAffixFromGenerationArguments
+	 * @covers ::applyTransformationsToGeneratedKey
+	 * @covers ::applyAffixesToGeneratedKey
+	 * @covers ::getGeneratedKey
+	 * @covers ::finishKeyGeneration
+	 */
 	public function testGenerateMethod()
 	{
 		$ga = $this->generator->generate();
@@ -38,5 +48,20 @@ final class GeneratorTest extends TestCase
 
 		$ge = $this->generator->affix(false, false)->transformations($callable)->generate(true);
 		$this->assertSame($this->generator->length - 8, strlen($ge));
+	}
+
+	/**
+	 * @covers ::overloadGenerateMethod
+	 * @expectedException Keygen\Exceptions\UnknownMethodCallKeygenException
+	 * @expectedExceptionMessage Call to unknown method: Keygen\Generators\NumericGenerator::generateUnique().
+	 */
+	public function testOverloadedGenerateMethod() {
+		$this->assertCount(10, $this->generator->generate10());
+		$this->assertCount(20, $this->generator->generate_20());
+		
+		$this->assertCount(100, $this->generator->generateUnique100());
+		$this->assertCount(200, $this->generator->generate_unique_200());
+
+		$keys = $this->generator->generateUnique();
 	}
 }

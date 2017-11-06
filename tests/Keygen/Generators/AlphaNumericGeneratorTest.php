@@ -4,7 +4,7 @@ use PHPUnit\Framework\TestCase;
 use Keygen\Generators\AlphaNumericGenerator;
 
 /**
- * @covers AlphaNumericGenerator
+ * @coversDefaultClass AlphaNumericGenerator
  */
 final class AlphaNumericGeneratorTest extends TestCase
 {
@@ -15,6 +15,12 @@ final class AlphaNumericGeneratorTest extends TestCase
 		$this->generator = new AlphaNumericGenerator;
 	}
 
+	/**
+	 * @covers ::keygen
+	 * @covers ::initAlphaNumericChars
+	 * @covers ::generateCharChunksByLength
+	 * @covers ::generateAlphaNumericCharsByLength
+	 */
 	public function testKeyGeneration()
 	{
 		$key = $this->generator->generate();

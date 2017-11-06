@@ -226,7 +226,7 @@ abstract class Generator extends AbstractGenerator
 	{
 		$inclusiveAffix = $this->inclusiveAffix;
 
-		$methodRegex = '/^generate(unique)?([1-9]\d+|[2-9])$/';
+		$methodRegex = '/^generate_?(unique)?_?([1-9]\d+|[2-9])$/';
 
 		if (preg_match($methodRegex, strtolower($method), $matches)) {
 
