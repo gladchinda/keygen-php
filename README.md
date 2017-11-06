@@ -19,7 +19,7 @@ Alternatively, you can manually add the Keygen package to the `composer.json` fi
 ```json
 {
     "require": {
-        "gladcodes/keygen": "^1.2.0"
+        "gladcodes/keygen": "dev-v1.2.0-alpha"
     }
 }
 ```
