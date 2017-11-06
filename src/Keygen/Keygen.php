@@ -28,8 +28,8 @@ class Keygen extends AbstractGenerator
 	protected static $generatorAliases = [
 		TokenGenerator::class 			=> 'token',
 		NumericGenerator::class 		=> 'numeric',
-		RandomByteGenerator::class 		=> 'byte',
-		AlphaNumericGenerator::class 	=> 'alphanum',
+		RandomByteGenerator::class 		=> ['bytes', 'randomByte'],
+		AlphaNumericGenerator::class 	=> ['alphanum', 'alphaNumeric'],
 	];
 
 	/**
@@ -132,7 +132,7 @@ class Keygen extends AbstractGenerator
 		$_args = $args;
 
 		if (static::generatorAliasExists($method)) {
-			array_unshift($method, $_args);
+			array_unshift($_args, $method);
 			return call_user_func_array([$this, 'newGeneratorFromAlias'], $_args);
 		}
 
