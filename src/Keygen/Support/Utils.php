@@ -18,14 +18,14 @@ class Utils
 	 * 
 	 * @return array
 	 */
-	public static function flattenArguments()
+	public static function flatten()
 	{
 		$args = func_get_args();
 		$flat = [];
 
 		foreach ($args as $arg) {
 			if (is_array($arg)) {
-				$flat = call_user_func_array('static::flattenArguments', array_merge($flat, $arg));
+				$flat = call_user_func_array('static::flatten', array_merge($flat, $arg));
 				continue;
 			}
 			array_push($flat, $arg);

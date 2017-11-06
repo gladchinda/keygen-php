@@ -40,7 +40,7 @@ class Keygen extends AbstractGenerator
 	protected static function getAllGeneratorAliases()
 	{
 		$aliases = array_values(static::$generatorAliases);
-		$aliases = array_map('strtolower', Utils::flattenArguments($aliases));
+		$aliases = array_map('strtolower', Utils::flatten($aliases));
 
 		return array_unique($aliases);
 	}
@@ -115,7 +115,7 @@ class Keygen extends AbstractGenerator
 		$generator = static::getGeneratorFromAlias($alias);
 
 		return (new $generator)->mutate($this)
-			->length($length ?: $this->length)
+			->length(($length || is_bool($length)) ? $length : $this->length)
 			->prefix($this->prefix)
 			->suffix($this->suffix);
 	}
@@ -140,12 +140,12 @@ class Keygen extends AbstractGenerator
 
 		$aliases = static::getAllGeneratorAliases();
 
-		$methodRegex = sprintf("(%s)([1-9]\d*|random)?", join('|', $aliases));
+		$methodRegex = sprintf("(%s)((?:[1-9]\d*)|random)?", join('|', $aliases));
 		$methodRegex = '/'. $methodRegex .'$/';
 
 		if (preg_match($methodRegex, $method, $matches)) {
 
-			$length = $matches[2];
+			$length = isset($matches[2]) ? $matches[2] : null;
 			$length = $length ? (($length === 'random') ? false : intval($length)) : null;
 
 			$attribute = preg_replace($methodRegex, '', $method);

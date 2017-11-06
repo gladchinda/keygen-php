@@ -252,7 +252,7 @@ abstract class AbstractGenerator implements GeneratorInterface
 	 */
 	protected function getAffixLength()
 	{
-		return intval(strlen($this->prefix) + strlen($this->suffix));
+		return intval(strlen($this->prefix ?: '') + strlen($this->suffix ?: ''));
 	}
 
 	/**
@@ -325,7 +325,7 @@ abstract class AbstractGenerator implements GeneratorInterface
 	 */
 	protected function transformation($tranformation)
 	{
-		$transformations = array_values(Utils::flattenArguments(func_get_args()));
+		$transformations = array_values(Utils::flatten(func_get_args()));
 		$countFromArgs = count($transformations);
 
 		$transformations = array_filter($transformations, 'is_callable');
@@ -398,7 +398,7 @@ abstract class AbstractGenerator implements GeneratorInterface
 	 */
 	protected function mutable($props)
 	{
-		$props = Utils::flattenArguments(func_get_args());
+		$props = Utils::flatten(func_get_args());
 		return $this->resolvePropertiesMutability($props, true);
 	}
 
@@ -410,7 +410,7 @@ abstract class AbstractGenerator implements GeneratorInterface
 	 */
 	protected function immutable($props)
 	{
-		$props = Utils::flattenArguments(func_get_args());
+		$props = Utils::flatten(func_get_args());
 		return $this->resolvePropertiesMutability($props, false);
 	}
 
@@ -498,7 +498,7 @@ abstract class AbstractGenerator implements GeneratorInterface
 	 */
 	protected function mutate($objects)
 	{
-		$objects = Utils::flattenArguments(func_get_args());
+		$objects = Utils::flatten(func_get_args());
 		return $this->resolveObjectsMutationLinkage($objects, true);
 	}
 
@@ -510,7 +510,7 @@ abstract class AbstractGenerator implements GeneratorInterface
 	 */
 	protected function dontMutate($objects)
 	{
-		$objects = Utils::flattenArguments(func_get_args());
+		$objects = Utils::flatten(func_get_args());
 		return $this->resolveObjectsMutationLinkage($objects, false);
 	}
 

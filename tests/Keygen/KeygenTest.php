@@ -8,10 +8,10 @@ use PHPUnit\Framework\TestCase;
  */
 final class KeygenTest extends TestCase
 {
-	protected $generator;
+	protected $keygen;
 
 	protected function setUp()
 	{
-		$this->generator = new Keygen;
+		$this->keygen = new Keygen;
 	}
 }

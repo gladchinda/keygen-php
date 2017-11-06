@@ -52,7 +52,10 @@ class NumericGenerator extends Generator
 	protected static function generateNumericChars($length)
 	{
 		$chars = str_shuffle('3759402687094152031368921');
-		$chars = str_shuffle(str_repeat($chars, ceil($length / strlen($chars))));
+		$repeatBy = ceil($length / (strlen($chars) - 1));
+
+		$repeatBy = intval(($repeatBy > 0) ? $repeatBy : 1);
+		$chars = str_shuffle(str_repeat($chars, $repeatBy));
 
 		return strrev(str_shuffle(substr($chars, mt_rand(0, (strlen($chars) - $length - 1)), $length)));
 	}
@@ -65,7 +68,7 @@ class NumericGenerator extends Generator
 	 */
 	protected function keygen($length)
 	{
-		if (! $this->nonZeroFirst) {
+		if ($this->nonZeroFirst) {
 			return mt_rand(1, 9) . static::generateNumericChars($length - 1);
 		}
 

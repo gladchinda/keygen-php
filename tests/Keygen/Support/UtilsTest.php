@@ -9,29 +9,29 @@ use PHPUnit\Framework\TestCase;
 final class UtilsTest extends TestCase
 {
 	/**
-	 * @covers ::flattenArguments
+	 * @covers ::flatten
 	 */
-	public function testFlattenArguments()
+	public function testflatten()
 	{
 		$argsSet = ['hello', 1, 'john', -23, '5.67', new \stdClass];
 		$emptySet = [];
 
-		$firstCase = Utils::flattenArguments('hello', 1, 'john', -23, '5.67', new \stdClass);
+		$firstCase = Utils::flatten('hello', 1, 'john', -23, '5.67', new \stdClass);
 		$this->assertCount(6, $firstCase);
 		$this->assertEquals($argsSet, $firstCase);
 
-		$secondCase = Utils::flattenArguments(['hello'], 1, 'john', [[-23], '5.67', [new \stdClass]]);
+		$secondCase = Utils::flatten(['hello'], 1, 'john', [[-23], '5.67', [new \stdClass]]);
 		$this->assertCount(6, $secondCase);
 		$this->assertEquals($argsSet, $secondCase);
 
-		$thirdCase = Utils::flattenArguments([['hello', [1, ['john'], -23]], ['5.67'], new \stdClass]);
+		$thirdCase = Utils::flatten([['hello', [1, ['john'], -23]], ['5.67'], new \stdClass]);
 		$this->assertCount(6, $thirdCase);
 		$this->assertEquals($argsSet, $thirdCase);
 
-		$fourthCase = Utils::flattenArguments();
+		$fourthCase = Utils::flatten();
 		$this->assertEmpty($fourthCase);
 
-		$fifthCase = Utils::flattenArguments([[[]]]);
+		$fifthCase = Utils::flatten([[[]]]);
 		$this->assertEmpty($fifthCase);
 	}
 }

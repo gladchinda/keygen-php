@@ -51,10 +51,13 @@ class AlphaNumericGenerator extends Generator
 		$chars = static::initAlphaNumericChars();
 
 		$size = strlen($chars);
-		$split = ceil($length / static::$chunkFactor);
+		$split = intval(ceil($length / static::$chunkFactor));
 
 		$splitSize = ceil($size / $split);
 		$chunkSize = $splitSize + mt_rand(1, static::$chunkFactor);
+
+		$chars = str_shuffle(str_repeat($chars, 2));
+		$size = strlen($chars);
 
 		while ($split != 0) {
 			$strip = substr($chars, mt_rand(0, $size - $chunkSize), $chunkSize);

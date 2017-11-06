@@ -80,7 +80,7 @@ abstract class Generator extends AbstractGenerator
 	 */
 	protected function resolveTransformationsFromGenerationArguments(array $args = null)
 	{
-		$transformations = array_values(Utils::flattenArguments((array) $args));
+		$transformations = array_values(Utils::flatten((array) $args));
 		$transformations = array_filter($transformations, 'is_callable');
 
 		return array_merge($this->transformations, $transformations);
@@ -137,7 +137,7 @@ abstract class Generator extends AbstractGenerator
 	 */
 	protected function exclusion($key)
 	{
-		$exclusions = array_values(Utils::flattenArguments(func_get_args()));
+		$exclusions = array_values(Utils::flatten(func_get_args()));
 		$exclusions = array_merge($this->exclusions, $exclusions);
 
 		$this->exclusions = array_unique($exclusions);
