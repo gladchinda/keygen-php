@@ -245,7 +245,8 @@ final class AbstractGeneratorTest extends TestCase
 	 * @covers ::isImmutable
 	 * @covers ::resolvePropertiesMutability
 	 */
-	public function testMutableProperties() {
+	public function testMutableProperties()
+	{
 		$this->assertEquals([], $this->generator->mutables);
 		$this->assertEquals([], $this->generator->immutables);
 
@@ -272,7 +273,8 @@ final class AbstractGeneratorTest extends TestCase
 	 * @covers ::propagatePropertyMutation
 	 * @covers ::setPropertyForGenerator
 	 */
-	public function testObjectMutations() {
+	public function testObjectMutations()
+	{
 		$generator1 = (new NumericGenerator(10))->mutable('length');
 		$generator2 = (new NumericGenerator(10))->mutable('length', 'prefix');
 

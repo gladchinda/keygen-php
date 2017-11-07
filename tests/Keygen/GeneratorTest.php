@@ -58,10 +58,48 @@ final class GeneratorTest extends TestCase
 	public function testOverloadedGenerateMethod() {
 		$this->assertCount(10, $this->generator->generate10());
 		$this->assertCount(20, $this->generator->generate_20());
-		
+
 		$this->assertCount(100, $this->generator->generateUnique100());
 		$this->assertCount(200, $this->generator->generate_unique_200());
 
 		$keys = $this->generator->generateUnique();
+	}
+
+	/**
+	 * @covers ::exclusion
+	 * @covers ::exclusions
+	 * @covers ::resetExclusions
+	 * @covers ::generate
+	 * @covers ::overloadGenerateMethod
+	 * @expectedException Keygen\Exceptions\TooMuchKeyIterationsKeygenException
+	 * @expectedExceptionMessage Maximum key generation iterations exceeded.
+	 */
+	public function testKeyExclusions()
+	{
+		$this->assertEmpty($this->generator->exclusions);
+		$this->assertEquals([], $this->generator->exclusions);
+
+		$exclusions = ['20', '30', '40', '50'];
+
+		$this->generator->exclusion('10', '90');
+		$this->assertEquals(['10', '90'], $this->generator->exclusions);
+
+		$this->generator->exclusion($exclusions);
+		$this->assertEquals(['10', '90', '20', '30', '40', '50'], $this->generator->exclusions);
+
+		$this->generator->exclusions($exclusions);
+		$this->assertEquals(['20', '30', '40', '50'], $this->generator->exclusions);
+
+		$this->generator->exclusions([]);
+		$this->assertEmpty($this->generator->exclusions);
+		$this->assertEquals([], $this->generator->exclusions);
+
+		$this->generator->exclusions($exclusions);
+
+		$generated = $this->generator->length(2)->generate1000();
+		$this->assertCount(4, array_diff($exclusions, $generated));
+		$this->assertCount(1000, array_diff($generated, $exclusions));
+
+		$this->generator->generateUnique5000();
 	}
 }

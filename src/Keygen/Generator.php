@@ -28,7 +28,7 @@ abstract class Generator extends AbstractGenerator
 	 *
 	 * @var int
 	 */
-	protected static $maxKeyIterations = 50;
+	protected static $maxKeyIterations = 1000;
 
 	/**
 	 * Generates a random key.

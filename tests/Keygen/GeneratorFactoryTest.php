@@ -19,7 +19,8 @@ final class GeneratorFactoryTest extends TestCase
      * @expectedException Keygen\Exceptions\InvalidGeneratorKeygenException
      * @expectedExceptionMessage Unknown generator alias: alpha.
      */
-    public function testGeneratorAliases() {
+    public function testGeneratorAliases()
+    {
         $aliases = GeneratorFactory::getAllGeneratorAliases();
 
         $this->assertCount(7, $aliases);
@@ -44,7 +45,8 @@ final class GeneratorFactoryTest extends TestCase
      * @expectedException Keygen\Exceptions\InvalidGeneratorKeygenException
      * @expectedExceptionMessage Unknown generator alias: alpha.
      */
-    public function testCreateGenerators() {
+    public function testCreateGenerators()
+    {
         $this->assertTrue(GeneratorFactory::isValidGenerator(NumericGenerator::class));
         $this->assertTrue(GeneratorFactory::isValidGenerator(GeneratorFactory::generator('token')));
         $this->assertFalse(GeneratorFactory::isValidGenerator(60));

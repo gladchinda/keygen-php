@@ -20,7 +20,8 @@ final class KeygenTest extends TestCase
 	 * @covers ::overloadGeneratorMethod
 	 * @covers ::newGeneratorFromAlias
 	 */
-	public function testGeneratorMethods() {
+	public function testGeneratorMethods()
+	{
 		$this->assertSame(16, Keygen::token()->length);
 		$this->assertSame(32, Keygen::bytes(32)->length);
 		$this->assertSame(20, Keygen::numeric20()->length);
@@ -45,7 +46,8 @@ final class KeygenTest extends TestCase
 	 * @covers ::overloadGeneratorMethod
 	 * @covers ::newGeneratorFromAlias
 	 */
-	public function testGeneratorPropertyAccessors() {
+	public function testGeneratorPropertyAccessors()
+	{
 		$this->assertSame(16, $this->keygen->token->length);
 		$this->assertSame(20, $this->keygen->numeric20->length);
 		$this->assertSame(12, $this->keygen->digits_12->length);
