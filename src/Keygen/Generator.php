@@ -66,8 +66,8 @@ abstract class Generator extends AbstractGenerator
 			array_unshift($args, $disableInclusiveAffix);
 			$disableInclusiveAffix = false;
 		}
-
-		$this->inclusiveAffix = !$disableInclusiveAffix;
+		
+		$this->inclusiveAffix = $disableInclusiveAffix ? false : $this->inclusiveAffix;
 
 		return $args;
 	}
@@ -164,30 +164,7 @@ abstract class Generator extends AbstractGenerator
 	 */
 	public function generate()
 	{
-		$inclusiveAffix = $this->inclusiveAffix;
-
-		$args = $this->resolveInclusiveAffixFromGenerationArguments(func_get_args());
-		$transforms = $this->resolveTransformationsFromGenerationArguments($args);
-
-		$iterations = 0;
-		$exclusions = (array) $this->exclusions;
-
-		$key = $this->getGeneratedKey($transforms);
-
-		while (in_array($key, $exclusions)) {
-
-			$iterations++;
-
-			if ($iterations == static::$maxKeyIterations) {
-				throw new TooMuchKeyIterationsKeygenException('Maximum key generation iterations exceeded.');
-			}
-
-			$key = $this->getGeneratedKey($transforms);
-		}
-
-		$this->inclusiveAffix = $inclusiveAffix;
-
-		return $this->finishKeyGeneration($key);
+		return $this->overloadGenerateMethod('generate', func_get_args());
 	}
 
 	/**
@@ -196,9 +173,9 @@ abstract class Generator extends AbstractGenerator
 	 * @param array $transformations
 	 * @return string
 	 */
-	protected function getGeneratedKey(array $transformations = null)
+	protected function getGeneratedKey($length, array $transformations = null)
 	{
-		$key = $this->applyTransformationsToGeneratedKey($this->keygen($this->getKeygenLength()), $transformations);
+		$key = $this->applyTransformationsToGeneratedKey($this->keygen($length), $transformations);
 		return $this->applyAffixesToGeneratedKey($key);
 	}
 
@@ -225,25 +202,33 @@ abstract class Generator extends AbstractGenerator
 	protected function overloadGenerateMethod($method, $args)
 	{
 		$inclusiveAffix = $this->inclusiveAffix;
+		$_method = strtolower($method);
 
+		$isGenerate = $_method === 'generate';
 		$methodRegex = '/^generate_?(unique)?_?([1-9]\d+|[2-9])$/';
 
-		if (preg_match($methodRegex, strtolower($method), $matches)) {
+		if ($isGenerate || preg_match($methodRegex, $_method, $matches)) {
 
-			$size = intval($matches[2]);
-			$ensureUnique = !!$matches[1];
+			if ($isGenerate) {
+				$size = 1;
+				$ensureUnique = null;
+			} else {
+				$size = intval($matches[2]);
+				$ensureUnique = !!$matches[1];
+			}
 
 			$collection = [];
 			$exclusions = (array) $this->exclusions;
 
 			$args = $this->resolveInclusiveAffixFromGenerationArguments($args);
 			$transforms = $this->resolveTransformationsFromGenerationArguments($args);
+			$keyLength = $this->getKeygenLength();
 
 			$iterations = 0;
 
 			do {
 
-				$key = $this->getGeneratedKey($transforms);
+				$key = $this->getGeneratedKey($keyLength, $transforms);
 
 				if (in_array($key, $exclusions)) {
 
@@ -267,8 +252,10 @@ abstract class Generator extends AbstractGenerator
 			} while (count($collection) != $size);
 
 			$this->inclusiveAffix = $inclusiveAffix;
+			$collection = $this->finishKeyGeneration($collection);
 
-			return $this->finishKeyGeneration($collection);
+			return $isGenerate ? $collection[0] : $collection;
+
 		}
 
 		return false;

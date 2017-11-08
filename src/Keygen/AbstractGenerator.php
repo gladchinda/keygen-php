@@ -11,11 +11,13 @@
 
 namespace Keygen;
 
+use ReflectionClass;
 use Keygen\Support\Utils;
 use Keygen\Exceptions\InvalidAffixKeygenException;
 use Keygen\Exceptions\InvalidLengthKeygenException;
 use Keygen\Exceptions\LengthTooShortKeygenException;
 use Keygen\Exceptions\UnknownMethodCallKeygenException;
+use Keygen\Exceptions\DirectModificationKeygenException;
 use Keygen\Exceptions\KeyCannotBeGeneratedKeygenException;
 use Keygen\Exceptions\InvalidTransformationKeygenException;
 use Keygen\Exceptions\UnknownPropertyAccessKeygenException;
@@ -27,21 +29,21 @@ abstract class AbstractGenerator implements GeneratorInterface
 	 *
 	 * @var int
 	 */
-	protected $length;
+	protected $length = null;
 
 	/**
 	 * Affix prepended to generated string.
 	 *
 	 * @var string
 	 */
-	protected $prefix;
+	protected $prefix = null;
 
 	/**
 	 * Affix appended to generated string.
 	 *
 	 * @var string
 	 */
-	protected $suffix;
+	protected $suffix = null;
 
 	/**
 	 * Key length should include affix length.
@@ -69,28 +71,28 @@ abstract class AbstractGenerator implements GeneratorInterface
 	 *
 	 * @var array
 	 */
-	protected $mutates = [];
+	protected $mutate = [];
 
 	/**
 	 * Collection of generator objects blacklisted from watching for property mutations.
 	 *
 	 * @var array
 	 */
-	protected $dontMutates = [];
+	protected $dontMutate = [];
 
 	/**
 	 * Collection of mutable generator properties.
 	 *
 	 * @var array
 	 */
-	protected $mutables = [];
+	protected $mutable = [];
 
 	/**
 	 * Collection of immutable generator properties.
 	 *
 	 * @var array
 	 */
-	protected $immutables = [];
+	protected $immutable = [];
 
 	/**
 	 * The base default key length.
@@ -264,10 +266,11 @@ abstract class AbstractGenerator implements GeneratorInterface
 	{
 		if ($this->randomLength) {
 			$length = mt_rand(1, 60) + ($this->inclusiveAffix ? $this->getAffixLength() : 0);
+			// $this->length = $length;
 			return $length;
 		}
 
-		return $this->length;
+		return $this->length ?: $this->getResolvedDefaultKeyLength();
 	}
 
 	/**
@@ -351,7 +354,7 @@ abstract class AbstractGenerator implements GeneratorInterface
 	}
 
 	/**
-	 * Adds or removes properties from the mutables and immutables collection where necessary.
+	 * Adds or removes properties from the mutable and immutable collection where necessary.
 	 *
 	 * @param array $props
 	 * @param bool $mutable
@@ -360,8 +363,10 @@ abstract class AbstractGenerator implements GeneratorInterface
 	protected function resolvePropertiesMutability(array $props = [], $mutable = true)
 	{
 		$props = array_filter(array_values($props), 'is_string');
-
 		$props = array_unique(array_map('strtolower', $props));
+
+		$props = array_values(array_intersect($props, static::getMutableProperties()));
+
 		$mutable = !!!is_bool($mutable) ?: $mutable;
 
 		foreach ($props as $prop) {
@@ -374,24 +379,44 @@ abstract class AbstractGenerator implements GeneratorInterface
 			}
 
 			if ($mutable) {
-				$this->mutables = array_merge($this->mutables, $isMutable ? [] : [$prop]);
-				$this->immutables = array_diff($this->immutables, $isImmutable ? [$prop] : []);
+				$this->mutable = array_merge($this->mutable, $isMutable ? [] : [$prop]);
+				$this->immutable = array_diff($this->immutable, $isImmutable ? [$prop] : []);
 			}
 
 			else {
-				$this->mutables = array_diff($this->mutables, $isMutable ? [$prop] : []);
-				$this->immutables = array_merge($this->immutables, $isImmutable ? [] : [$prop]);
+				$this->mutable = array_diff($this->mutable, $isMutable ? [$prop] : []);
+				$this->immutable = array_merge($this->immutable, $isImmutable ? [] : [$prop]);
 			}
 		}
 
-		$this->mutables = array_values($this->mutables);
-		$this->immutables = array_values($this->immutables);
+		$this->mutable = array_values($this->mutable);
+		$this->immutable = array_values($this->immutable);
 
 		return $this;
 	}
 
 	/**
-	 * Add mutable properties to the mutables collection.
+	 * Add properties to or reset the mutable or immutable collections.
+	 *
+	 * @param mixed $props
+	 * @param bool $mutable
+	 * @return $this
+	 */
+	protected function setMutableGeneratorProperties(array $props, $mutable = true)
+	{
+		$mutable = !!!is_bool($mutable) ?: $mutable;
+		$property = $mutable ? 'mutable' : 'immutable';
+
+		if (count($props) > 0) {
+			return $this->resolvePropertiesMutability($props, $mutable);
+		}
+
+		$this->{$property} = [];
+		return $this;
+	}
+
+	/**
+	 * Add mutable properties to the mutable collection or reset the collection.
 	 *
 	 * @param mixed $props
 	 * @return $this
@@ -399,11 +424,11 @@ abstract class AbstractGenerator implements GeneratorInterface
 	protected function mutable($props)
 	{
 		$props = Utils::flatten(func_get_args());
-		return $this->resolvePropertiesMutability($props, true);
+		return $this->setMutableGeneratorProperties($props, true);
 	}
 
 	/**
-	 * Add immutable properties to the immutables collection.
+	 * Add immutable properties to the immutable collection or reset the collection.
 	 *
 	 * @param mixed $props
 	 * @return $this
@@ -411,7 +436,7 @@ abstract class AbstractGenerator implements GeneratorInterface
 	protected function immutable($props)
 	{
 		$props = Utils::flatten(func_get_args());
-		return $this->resolvePropertiesMutability($props, false);
+		return $this->setMutableGeneratorProperties($props, false);
 	}
 
 	/**
@@ -422,7 +447,7 @@ abstract class AbstractGenerator implements GeneratorInterface
 	 */
 	protected function isMutable($prop)
 	{
-		return in_array($prop, $this->mutables);
+		return in_array($prop, $this->mutable);
 	}
 
 	/**
@@ -433,11 +458,11 @@ abstract class AbstractGenerator implements GeneratorInterface
 	 */
 	protected function isImmutable($prop)
 	{
-		return in_array($prop, $this->immutables);
+		return in_array($prop, $this->immutable);
 	}
 
 	/**
-	 * Adds or removes generator objects from the mutates and dontMutates collection where necessary.
+	 * Adds or removes generator objects from the mutate and dontMutate collection where necessary.
 	 *
 	 * @param array $objects
 	 * @param bool $link
@@ -458,26 +483,26 @@ abstract class AbstractGenerator implements GeneratorInterface
 
 			if ($link) {
 				if ($notLinked) {
-					$this->dontMutates = array_filter($this->dontMutates, function($object) use ($obj) {
+					$this->dontMutate = array_filter($this->dontMutate, function($object) use ($obj) {
 						return $object !== $obj;
 					});
 				}
 
-				$this->mutates = array_merge($this->mutates, $isLinked ? [] : [$obj]);
+				$this->mutate = array_merge($this->mutate, $isLinked ? [] : [$obj]);
 			}
 
 			else {
 				if ($isLinked) {
-					$this->mutates = array_filter($this->mutates, function($object) use ($obj) {
+					$this->mutate = array_filter($this->mutate, function($object) use ($obj) {
 						return $object !== $obj;
 					});
 				}
-				
-				$this->dontMutates = array_merge($this->dontMutates, $notLinked ? [] : [$obj]);
+
+				$this->dontMutate = array_merge($this->dontMutate, $notLinked ? [] : [$obj]);
 			}
 
-			$this->mutates = array_values($this->mutates);
-			$this->dontMutates = array_values($this->dontMutates);
+			$this->mutate = array_values($this->mutate);
+			$this->dontMutate = array_values($this->dontMutate);
 
 			$transcendLinkage = $link && !$obj->isLinked($this);
 			$transcendNoLinkage = !($link || $obj->linkBlocked($this));
@@ -491,7 +516,27 @@ abstract class AbstractGenerator implements GeneratorInterface
 	}
 
 	/**
-	 * Add linked generator objects to the mutates collection.
+	 * Add generator objects to or reset the mutate or dontMutate collections.
+	 *
+	 * @param mixed $objects
+	 * @param bool $link
+	 * @return $this
+	 */
+	protected function manageGeneratorObjectsLinkage(array $objects, $link = true)
+	{
+		$link = !!!is_bool($link) ?: $link;
+		$property = $link ? 'mutate' : 'dontMutate';
+
+		if (count($objects) > 0) {
+			return $this->resolveObjectsMutationLinkage($objects, $link);
+		}
+
+		$this->{$property} = [];
+		return $this;
+	}
+
+	/**
+	 * Add linked generator objects to the mutate collection or reset the collection.
 	 *
 	 * @param mixed $objects
 	 * @return $this
@@ -499,11 +544,11 @@ abstract class AbstractGenerator implements GeneratorInterface
 	protected function mutate($objects)
 	{
 		$objects = Utils::flatten(func_get_args());
-		return $this->resolveObjectsMutationLinkage($objects, true);
+		return $this->manageGeneratorObjectsLinkage($objects, true);
 	}
 
 	/**
-	 * Add blacklisted generator objects to the dontMutates collection.
+	 * Add blacklisted generator objects to the dontMutate collection or reset the collection.
 	 *
 	 * @param mixed $objects
 	 * @return $this
@@ -511,7 +556,7 @@ abstract class AbstractGenerator implements GeneratorInterface
 	protected function dontMutate($objects)
 	{
 		$objects = Utils::flatten(func_get_args());
-		return $this->resolveObjectsMutationLinkage($objects, false);
+		return $this->manageGeneratorObjectsLinkage($objects, false);
 	}
 
 	/**
@@ -522,7 +567,7 @@ abstract class AbstractGenerator implements GeneratorInterface
 	 */
 	protected function isLinked(AbstractGenerator $object)
 	{
-		return in_array($object, $this->mutates, true);
+		return in_array($object, $this->mutate, true);
 	}
 
 	/**
@@ -533,7 +578,7 @@ abstract class AbstractGenerator implements GeneratorInterface
 	 */
 	protected function linkBlocked(AbstractGenerator $object)
 	{
-		return in_array($object, $this->dontMutates, true);
+		return in_array($object, $this->dontMutate, true);
 	}
 
 	/**
@@ -548,7 +593,7 @@ abstract class AbstractGenerator implements GeneratorInterface
 		$propagate = !!!is_bool($propagate) ?: $propagate;
 
 		if ($propagate) {
-			foreach ($this->mutates as $obj) {
+			foreach ($this->mutate as $obj) {
 				if ($obj->isMutable($prop) && ( $obj->{$prop} !== $this->{$prop} )) {
 					$obj->setPropertyForGenerator($prop, $this->{$prop});
 				}
@@ -595,7 +640,69 @@ abstract class AbstractGenerator implements GeneratorInterface
 			'inclusiveAffix', 'transformation', 'transformations',
 			'mutable', 'immutable', 'isMutable', 'isImmutable',
 			'mutate', 'dontMutate', 'isLinked', 'linkBlocked',
+			'defaults',
 		];
+	}
+
+	/**
+	 * List of the allowed mutable generator properties.
+	 *
+	 * @return array
+	 */
+	protected static function getMutableProperties()
+	{
+		return [
+			'length', 'prefix', 'suffix'
+		];
+	}
+	
+	/**
+	 * Restores the default value for the specified or all generator properties.
+	 *
+	 * @param mixed $props
+	 * @return $this
+	 */
+	protected function defaults($props = [])
+	{
+		$args = Utils::flatten(func_get_args());
+		$props = array_filter($args, 'is_string');
+
+		$reflector = new ReflectionClass(static::class);
+		$defaultProps = $reflector->getDefaultProperties();
+
+		$staticPropsKeys = array_keys($reflector->getStaticProperties());
+		$defaultPropsKeys = array_keys($defaultProps);
+
+		$props = (count($args) > 0) ? array_intersect($props, $defaultPropsKeys) : $defaultPropsKeys;
+		$props = array_diff($props, $staticPropsKeys);
+
+		foreach ($props as $prop) {
+			$this->{$prop} = $defaultProps[ $prop ];
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Tries to set generator property based on the given method and args.
+	 *
+	 * @param string $prop
+	 * @param string $method
+	 * @param array $args
+	 * 
+	 * @throws \Exception
+	 */
+	protected function tryChangePropValueViaMethod($prop, $method, $args)
+	{
+		$currentPropValue = $this->{$prop};
+
+		try {
+			$this->defaults($prop);
+			call_user_func_array([$this, $method], $args);
+		} catch (\Exception $e) {
+			$this->{$prop} = $currentPropValue;
+			throw $e;
+		}
 	}
 
 	/**
@@ -604,22 +711,38 @@ abstract class AbstractGenerator implements GeneratorInterface
 	 * @param string $prop
 	 * @param mixed $value
 	 * @return $this
+	 * 
+	 * @throws Keygen\Exceptions\DirectModificationKeygenException
 	 */
 	protected function setPropertyForGenerator($prop, $value)
 	{
 		$args = func_get_args();
 		array_shift($args);
 
-		if (method_exists($this, $method = "set{$prop}Property")) {
-			call_user_func_array([$this, $method], $args);
+		$args = Utils::flatten($args);
+		$args = (count($args) > 0) ? $args : [[]];
+
+		if (property_exists($this, $prop)) {
+			// $this->{$prop} = $value;
+
+			if (method_exists($this, $method = "set{$prop}Property")) {
+				$this->tryChangePropValueViaMethod($prop, $method, $args);
+			}
+	
+			elseif (method_exists($this, $prop)) {
+				$this->tryChangePropValueViaMethod($prop, $prop, $args);
+			}
+
+			else {
+				$problem = sprintf("Cannot directly modify property: %s::%s.", static::class, $prop);
+				throw new DirectModificationKeygenException($problem);
+			}
+			
 		}
 
-		elseif (method_exists($this, $prop)) {
-			call_user_func_array([$this, $prop], $args);
-		}
-
-		elseif (property_exists($prop)) {
-			$this->$prop = $value;
+		else {
+			$problem = sprintf("Trying to directly modify unknown property: %s::%s.", static::class, $prop);
+			throw new DirectModificationKeygenException($problem);
 		}
 
 		return $this;
@@ -631,6 +754,14 @@ abstract class AbstractGenerator implements GeneratorInterface
 	public function __isset($prop)
 	{
 		return array_key_exists($prop, get_object_vars($this));
+	}
+	
+	/**
+	 * Overload the __set method
+	 */
+	public function __set($prop, $value)
+	{
+		$this->setPropertyForGenerator($prop, $value);
 	}
 
 	/**
@@ -675,5 +806,14 @@ abstract class AbstractGenerator implements GeneratorInterface
 	public static function __callStatic($method, $args)
 	{
 		return (new static)->__call($method, $args);
+	}
+	
+	/**
+	 * Overload the __clone method
+	 */
+	public function __clone()
+	{
+		$this->mutate = [];
+		$this->dontMutate = [];
 	}
 }

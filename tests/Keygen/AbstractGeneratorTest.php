@@ -1,7 +1,6 @@
 <?php
 
 use Keygen\Keygen;
-use Keygen\AbstractGenerator;
 use PHPUnit\Framework\TestCase;
 use Keygen\Generators\NumericGenerator;
 
@@ -247,21 +246,27 @@ final class AbstractGeneratorTest extends TestCase
 	 */
 	public function testMutableProperties()
 	{
-		$this->assertEquals([], $this->generator->mutables);
-		$this->assertEquals([], $this->generator->immutables);
+		$this->assertEquals([], $this->generator->mutable);
+		$this->assertEquals([], $this->generator->immutable);
 
-		$this->generator->mutable('length')->mutable('prefix');
+		$this->generator->mutable('prefix', 'mutate', 'length')->mutable(new \stdClass);
 		$this->assertTrue($this->generator->isMutable('length'));
 		$this->assertTrue($this->generator->isMutable('prefix'));
+		$this->assertFalse($this->generator->isMutable('mutate'));
 		$this->assertFalse($this->generator->isMutable('suffix'));
-		$this->assertEquals(['length', 'prefix'], $this->generator->mutables);
+		$this->assertEquals(['prefix', 'length'], $this->generator->mutable);
 
-		$this->generator->immutable('length')->immutable('suffix');
+		$this->generator->immutable('suffix', 'length', new \stdClass)->immutable('mutate');
 		$this->assertTrue($this->generator->isImmutable('length'));
 		$this->assertTrue($this->generator->isImmutable('suffix'));
+		$this->assertFalse($this->generator->isImmutable('mutate'));
 		$this->assertFalse($this->generator->isImmutable('prefix'));
-		$this->assertEquals(['prefix'], $this->generator->mutables);
-		$this->assertEquals(['length', 'suffix'], $this->generator->immutables);
+		$this->assertEquals(['prefix'], $this->generator->mutable);
+		$this->assertEquals(['suffix', 'length'], $this->generator->immutable);
+		
+		$this->generator->mutable([])->immutable([]);
+		$this->assertEquals([], $this->generator->mutable);
+		$this->assertEquals([], $this->generator->immutable);
 	}
 
 	/**
@@ -280,7 +285,7 @@ final class AbstractGeneratorTest extends TestCase
 
 		$this->generator->mutate($generator2, $generator1);
 
-		$this->assertEquals([$generator2, $generator1], $this->generator->mutates);
+		$this->assertEquals([$generator2, $generator1], $this->generator->mutate);
 		$this->assertTrue($this->generator->isLinked($generator1));
 		$this->assertTrue($generator2->isLinked($this->generator));
 
@@ -300,8 +305,8 @@ final class AbstractGeneratorTest extends TestCase
 
 		$this->generator->dontMutate($generator2);
 
-		$this->assertEquals([$generator1], $this->generator->mutates);
-		$this->assertEquals([$generator2], $this->generator->dontMutates);
+		$this->assertEquals([$generator1], $this->generator->mutate);
+		$this->assertEquals([$generator2], $this->generator->dontMutate);
 		$this->assertTrue($this->generator->linkBlocked($generator2));
 		$this->assertTrue($generator2->linkBlocked($this->generator));
 
@@ -316,6 +321,10 @@ final class AbstractGeneratorTest extends TestCase
 		
 		$this->assertEquals(24, $this->generator->length);
 		$this->assertEquals(24, $generator1->length);
+		
+		$this->generator->mutate([])->dontMutate([]);
+		$this->assertEquals([], $this->generator->mutate);
+		$this->assertEquals([], $this->generator->dontMutate);
 	}
 
 	/**
@@ -326,6 +335,83 @@ final class AbstractGeneratorTest extends TestCase
 	public function testCallToGenerateMethod()
 	{
 		(new Keygen)->generate();
+	}
+
+	/**
+	 * @covers ::defaults
+	 */
+	public function testRestoreDefaultValue()
+	{
+		$this->generator->length(40)->affix('INTL-', '-REG');
+		$this->assertEquals(40, $this->generator->length);
+
+		$this->generator->defaults('length');
+		$this->assertEquals(16, $this->generator->length);
+		$this->assertEquals('INTL-', $this->generator->prefix);
+		$this->assertEquals('-REG', $this->generator->suffix);
+
+		$this->generator->defaults();
+		$this->assertEquals(null, $this->generator->prefix);
+		$this->assertEquals(null, $this->generator->suffix);
+	}
+
+	/**
+	 * @covers ::__set
+	 * @covers ::setPropertyForGenerator
+	 * @covers ::tryChangePropValueViaMethod
+	 * @covers ::defaults
+	 */
+	public function testSetGeneratorProperty()
+	{
+		$this->generator->length = false;
+		$this->assertTrue($this->generator->randomLength);
+		
+		$this->generator->length = '10';
+		$this->assertFalse($this->generator->randomLength);
+		$this->assertEquals(10, $this->generator->length);
+
+		$this->generator->prefix = 'IMG-';
+		$this->assertEquals('IMG-', $this->generator->prefix);
+
+		$this->generator->suffix = '.jpg';
+		$this->assertEquals('.jpg', $this->generator->suffix);
+		
+		$this->generator->transformations = ['strrev', 'md5'];
+		$this->assertEquals(['strrev', 'md5'], $this->generator->transformations);
+		
+		$this->generator->transformations = [];
+		$this->assertEquals([], $this->generator->transformations);
+		
+		$this->generator->mutable = ['affix', 'length'];
+		$this->assertEquals(['length'], $this->generator->mutable);
+		
+		$this->generator->mutable = ['prefix'];
+		$this->assertEquals(['prefix'], $this->generator->mutable);
+		
+		$this->generator->mutable = [];
+		$this->assertEquals([], $this->generator->mutable);
+	}
+
+	/**
+	 * @covers ::__set
+	 * @covers ::setPropertyForGenerator
+	 * @expectedException Keygen\Exceptions\DirectModificationKeygenException
+	 * @expectedExceptionMessage Trying to directly modify unknown property: Keygen\Generators\NumericGenerator::transformation.
+	 */
+	public function testSetUnknownProperty()
+	{
+		$this->generator->transformation = ['strrev', 'md5'];
+	}
+
+	/**
+	 * @covers ::__set
+	 * @covers ::setPropertyForGenerator
+	 * @expectedException Keygen\Exceptions\DirectModificationKeygenException
+	 * @expectedExceptionMessage Cannot directly modify property: Keygen\Generators\NumericGenerator::randomLength.
+	 */
+	public function testSetRestrictedProperty()
+	{
+		$this->generator->randomLength = true;
 	}
 
 	/**
