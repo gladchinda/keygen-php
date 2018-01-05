@@ -1,8 +1,8 @@
 # Key Affixes
 
-- [Overview](#1)
-- [Affix Values](#2)
-- [Affix Inclusion](#3)
+- [Overview](#overview)
+- [Affix Values](#affix-values)
+- [Affix Inclusion](#affix-inclusion)
 
 ## Overview
 **Affixes** are strings attached to a generated key. They can be attached at either or both ends of the generated key. There are two affixes:

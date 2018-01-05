@@ -132,8 +132,9 @@ abstract class AbstractGenerator implements GeneratorInterface
 	{
 		$boolLength = is_bool($length);
 		$floatRegex = '/^\d+(.0+)?$/';
+		$validNumeric = is_numeric($length) && preg_match($floatRegex, strval($length));
 
-		if ( !$boolLength && !(is_numeric($length) && preg_match($floatRegex, strval($length))) ) {
+		if (!( is_null($length) || $boolLength || $validNumeric )) {
 			throw new InvalidLengthKeygenException("Invalid length.");
 		}
 
@@ -143,7 +144,7 @@ abstract class AbstractGenerator implements GeneratorInterface
 		$length = $boolLength ? $defaultLength : (intval($length) ?: $defaultLength);
 
 		if ($length < 1) {
-			throw new InvalidLengthKeygenException("Length cannot be less than 1.");
+			throw new InvalidLengthKeygenException("Invalid length.");
 		}
 
 		$this->length = $length;
