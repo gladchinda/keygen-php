@@ -54,7 +54,7 @@ class AlphaNumericGenerator extends Generator
 		$split = intval(ceil($length / static::$chunkFactor));
 
 		$splitSize = ceil($size / $split);
-		$chunkSize = $splitSize + mt_rand(1, static::$chunkFactor);
+		$chunkSize = static::$chunkFactor + $splitSize + mt_rand(1, static::$chunkFactor);
 
 		$chars = str_shuffle(str_repeat($chars, 2));
 		$size = strlen($chars);
