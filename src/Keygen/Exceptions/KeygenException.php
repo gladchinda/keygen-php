@@ -9,14 +9,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Keygen;
+namespace Keygen\Exceptions;
 
-interface GeneratorInterface
-{
-	/**
-	 * Handles key generation logic and returns the generated key.
-	 * 
-	 * @return string
-	 */
-	public function generate();
-}
+use Exception;
+
+class KeygenException extends Exception
+{}

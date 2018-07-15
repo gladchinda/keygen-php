@@ -11,75 +11,213 @@
 
 namespace Keygen\Generators;
 
-use RuntimeException;
 use Keygen\Generator;
+use Keygen\Exceptions\BinaryDataKeygenException;
 
 class RandomByteGenerator extends Generator
 {
 	/**
-	 * Hexadecimal output enabled.
-	 * 
+	 * Should return as hexadecimal.
+	 *
 	 * @var bool
 	 */
 	protected $hex = false;
 
 	/**
-	 * Enables hexadecimal output of byte string.
-	 * 
-	 * @return $this
+	 * Should return as base64-encoded.
+	 *
+	 * @var bool
 	 */
-	public function hex()
+	protected $base64 = false;
+
+	/**
+	 * List of available byte output types.
+	 *
+	 * @var array
+	 */
+	protected static $outputs = ['hex', 'base64'];
+
+	/**
+	 * Disable all byte output types.
+	 *
+	 * @return null
+	 */
+	protected function resetByteOutput()
 	{
-		$this->hex = true;
+		foreach (static::$outputs as $output) {
+			$this->{$output} = false;
+		}
+
 		return $this;
 	}
 
 	/**
-	 * Generates a random key.
-	 * 
-	 * @param numeric $length
-	 * @return string
-	 * 
-	 * @throws \RuntimeException
+	 * Enables a byte output type.
+	 *
+	 * @param string $type
+	 * @return $this
 	 */
-	protected function keygen($length)
+	protected function enableByteOutput($type)
 	{
-		$hex = !is_bool($this->hex) ?: $this->hex;
-		$bytelength = $hex ? ceil($length / 2) : $length;
+		$type = strtolower($type);
 
-		if (function_exists('mcrypt_create_iv')) {
-			$bytes = mcrypt_create_iv($bytelength, MCRYPT_DEV_URANDOM);
+		if (in_array($type, static::$outputs)) {
+			$this->resetByteOutput();
+			$this->{$type} = true;
 		}
 
-		elseif (function_exists('openssl_random_pseudo_bytes')) {
-			$bytes = openssl_random_pseudo_bytes($bytelength);
-		}
-
-		elseif (@file_exists('/dev/urandom') && $bytelength < 100) {
-			$bytes = file_get_contents('/dev/urandom', false, null, 0, $bytelength);
-		}
-
-		else {
-			throw new RuntimeException('Cannot generate binary data.');
-		}
-
-		return $hex ? substr(bin2hex($bytes), 0, $length) : $bytes;
+		return $this;
 	}
 
 	/**
-	 * Outputs a generated key including the prefix and suffix if any.
-	 * May also return transformed keys.
-	 * 
-	 * @return string
+	 * Get the enabled byte output type.
+	 *
+	 * @return string|null
 	 */
-	public function generate()
+	protected function enabledByteOutput()
 	{
-		$key = call_user_func_array('parent::generate', func_get_args());
+		$output = array_filter(static::$outputs, function($type) {
+			return $this->{$type} === true;
+		});
 
-		if ($this->hex === true) {
-			$this->hex = false;
+		return empty($output) ? null : array_shift($output);
+	}
+
+	/**
+	 * Enables hexadecimal output.
+	 *
+	 * @return $this
+	 */
+	protected function hex()
+	{
+		return $this->enableByteOutput('hex');
+	}
+
+	/**
+	 * Enables base64-encoded output.
+	 *
+	 * @return $this
+	 */
+	protected function base64()
+	{
+		return $this->enableByteOutput('base64');
+	}
+
+	/**
+	 * Generates the random bytes.
+	 *
+	 * @param int $length
+	 * @return string
+	 *
+	 * @throws Keygen\Exceptions\BinaryDataKeygenException
+	 */
+	protected static function generateRandomBytes($length)
+	{
+		if (function_exists('mcrypt_create_iv')) {
+			$bytes = mcrypt_create_iv($length, MCRYPT_DEV_URANDOM);
 		}
 
+		elseif (function_exists('openssl_random_pseudo_bytes')) {
+			$bytes = openssl_random_pseudo_bytes($length);
+		}
+
+		elseif (@file_exists('/dev/urandom') && $length < 100) {
+			$bytes = file_get_contents('/dev/urandom', false, null, 0, $length);
+		}
+
+		else {
+			throw new BinaryDataKeygenException('Unable to generate binary data.');
+		}
+
+		return $bytes;
+	}
+
+	/**
+	 * Generates the random bytes as hexadecimal.
+	 *
+	 * @param int $length
+	 * @return string
+	 *
+	 * @throws Keygen\Exceptions\BinaryDataKeygenException
+	 */
+	protected static function bytesAsHex($length)
+	{
+		$bytes = static::generateRandomBytes(ceil($length / 2));
+		return substr(bin2hex($bytes), 0, $length);
+	}
+
+	/**
+	 * Generates the random bytes as base64-encoded.
+	 *
+	 * @param int $length
+	 * @return string
+	 *
+	 * @throws Keygen\Exceptions\BinaryDataKeygenException
+	 */
+	protected static function bytesAsBase64($length)
+	{
+		$bytes = static::generateRandomBytes(round($length * 3 / 4));
+		return substr(base64_encode($bytes), -$length);
+	}
+
+	/**
+	 * Generates a random key.
+	 *
+	 * @param int $length
+	 * @return string
+	 */
+	protected function keygen($length)
+	{
+		$output = $this->enabledByteOutput();
+
+		if ($output) {
+
+			$method = sprintf("bytesAs%s", ucfirst(strtolower($output)));
+
+			if (method_exists(static::class, $method)) {
+				return static::{$method}($length);
+			}
+
+		}
+
+		return static::generateRandomBytes($length);
+	}
+
+	/**
+	 * Finish up key generation logic and return the generated key or key collection.
+	 *
+	 * @param string|array $key (The generated key or key collection)
+	 * @return string|array
+	 */
+	protected function finishKeyGeneration($key)
+	{
+		$this->resetByteOutput();
 		return $key;
+	}
+
+	/**
+	 * List of the allowed overloaded attributes.
+	 *
+	 * @return array
+	 */
+	protected static function getOverloadedAttributes()
+	{
+		$appends = ['hex', 'base64'];
+		$attributes = parent::getOverloadedAttributes();
+
+		return array_unique(array_merge($attributes, $appends));
+	}
+
+	/**
+	 * List of the allowed overloaded methods.
+	 *
+	 * @return array
+	 */
+	protected static function getOverloadedMethods()
+	{
+		$appends = ['hex', 'base64'];
+		$methods = parent::getOverloadedMethods();
+
+		return array_unique(array_merge($methods, $appends));
 	}
 }

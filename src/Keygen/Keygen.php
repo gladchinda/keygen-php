@@ -20,50 +20,77 @@ namespace Keygen;
 class Keygen extends AbstractGenerator
 {
 	/**
-	 * Creates a new generator instance of the given type.
+	 * Creates instance of generator from alias.
 	 * 
-	 * @param string $type Generator type
-	 * @param mixed $length
+	 * @param string $alias
+	 * @param int|bool $length
 	 * @return Keygen\Generator
 	 * 
-	 * @throws \InvalidArgumentException
-	 */
-	protected function newGenerator($type, $length = null)
-	{
-		$generator = GeneratorFactory::create($type)->mutate($this)->length($length ?: $this->length);
-
-		if (isset($this->prefix)) {
-			$generator->prefix($this->prefix);
-		}
-
-		if (isset($this->suffix)) {
-			$generator->suffix($this->suffix);
-		}
-
-		return $generator;
-	}
-
-	/**
-	 * Creates a new generator instance from the given alias.
-	 * 
-	 * @param string $alias Generator type alias
-	 * @param mixed $length
-	 * @return Keygen\Generator | null
-	 * 
-	 * @throws \InvalidArgumentException
+	 * @throws Keygen\Exceptions\InvalidGeneratorKeygenException
 	 */
 	protected function newGeneratorFromAlias($alias, $length = null)
 	{
-		$generatorAliases = [
-			'numeric' => 'numeric',
-			'alphanum' => 'alphaNumeric',
-			'token' => 'token',
-			'bytes' => 'randomByte'
-		];
+		return GeneratorFactory::getGeneratorFromAlias($alias)
+			->mutate($this)
+			->length(($length || is_bool($length)) ? $length : $this->length)
+			->prefix($this->prefix)
+			->suffix($this->suffix);
+	}
 
-		if (array_key_exists($alias, $generatorAliases)) {
-			return $this->newGenerator($generatorAliases[$alias], $length);
+	/**
+	 * Overloaded method for creating generator instances.
+	 *
+	 * @param string $method
+	 * @param array $args
+	 * @return false|Keygen\Generator
+	 */
+	protected function overloadGeneratorMethod($method, $args)
+	{
+		$_args = $args;
+
+		if (GeneratorFactory::generatorAliasExists($method)) {
+			array_unshift($_args, $method);
+			return call_user_func_array([$this, 'newGeneratorFromAlias'], $_args);
 		}
+
+		$method = strtolower($method);
+
+		$aliases = GeneratorFactory::getAllGeneratorAliases();
+
+		$methodRegex = sprintf("_?(%s)_?((?:[1-9]\d*)|random)?", join('|', $aliases));
+		$methodRegex = '/'. $methodRegex .'$/';
+
+		if (preg_match($methodRegex, $method, $matches)) {
+
+			$length = isset($matches[2]) ? $matches[2] : null;
+			$length = $length ? (($length === 'random') ? false : intval($length)) : null;
+
+			$attribute = preg_replace($methodRegex, '', $method);
+
+			$generator = $this->newGeneratorFromAlias($matches[1], $length);
+
+			if (empty($attribute)) {
+				return $generator;
+			}
+
+			if ($generator->isOverloaded($attribute)) {
+				return $generator->{$attribute}();
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Overload the __get method
+	 */
+	public function __get($prop)
+	{
+		if ($overloader = $this->overloadGeneratorMethod($prop, [])) {
+			return $overloader;
+		}
+
+		return parent::__get($prop);
 	}
 
 	/**
@@ -71,11 +98,8 @@ class Keygen extends AbstractGenerator
 	 */
 	public function __call($method, $args)
 	{
-		$_method = strtolower($method);
-		$generator = $this->newGeneratorFromAlias($_method, isset($args[0]) ? $args[0] : null);
-
-		if ($generator instanceof Generator) {
-			return $generator;
+		if ($overloader = $this->overloadGeneratorMethod($method, $args)) {
+			return $overloader;
 		}
 
 		return parent::__call($method, $args);

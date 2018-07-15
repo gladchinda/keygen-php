@@ -9,23 +9,23 @@
  * file that was distributed with this source code.
  */
 
-namespace Keygen\Traits;
+namespace Keygen\Support;
 
-trait FlattenArguments
+class Utils
 {
 	/**
 	 * Flattens its arguments array into a simple array.
 	 * 
 	 * @return array
 	 */
-	protected function flattenArguments()
+	public static function flatten()
 	{
 		$args = func_get_args();
 		$flat = [];
 
 		foreach ($args as $arg) {
 			if (is_array($arg)) {
-				$flat = call_user_func_array(array($this, 'flattenArguments'), array_merge($flat, $arg));
+				$flat = call_user_func_array('static::flatten', array_merge($flat, $arg));
 				continue;
 			}
 			array_push($flat, $arg);

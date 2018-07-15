@@ -17,8 +17,8 @@ class TokenGenerator extends Generator
 {
 	/**
 	 * Generates a random key.
-	 * 
-	 * @param numeric $length
+	 *
+	 * @param int $length
 	 * @return string
 	 */
 	protected function keygen($length)
