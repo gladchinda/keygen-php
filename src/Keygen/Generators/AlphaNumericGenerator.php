@@ -17,7 +17,7 @@ class AlphaNumericGenerator extends Generator
 {
 	/**
 	 * Generates a random key.
-	 * 
+	 *
 	 * @param numeric $length
 	 * @return string
 	 */
@@ -32,7 +32,7 @@ class AlphaNumericGenerator extends Generator
 		$size = strlen($chars);
 
 		$splitSize = ceil($size / $split);
-		$chunkSize = $splitSize + mt_rand(1, 5);
+		$chunkSize = 5 + $splitSize + mt_rand(1, 5);
 		$chunkArray = array();
 
 		while ($split != 0) {
@@ -46,7 +46,7 @@ class AlphaNumericGenerator extends Generator
 			$setSize = strlen($set);
 			$key .= substr($set, mt_rand(0, $setSize - $adjust), $adjust);
 		}
-		
+
 		return str_rot13(str_shuffle($key));
 	}
 }
