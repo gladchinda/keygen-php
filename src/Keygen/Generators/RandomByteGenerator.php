@@ -18,14 +18,14 @@ class RandomByteGenerator extends Generator
 {
 	/**
 	 * Hexadecimal output enabled.
-	 * 
+	 *
 	 * @var bool
 	 */
 	protected $hex = false;
 
 	/**
 	 * Enables hexadecimal output of byte string.
-	 * 
+	 *
 	 * @return $this
 	 */
 	public function hex()
@@ -36,10 +36,10 @@ class RandomByteGenerator extends Generator
 
 	/**
 	 * Generates a random key.
-	 * 
+	 *
 	 * @param numeric $length
 	 * @return string
-	 * 
+	 *
 	 * @throws \RuntimeException
 	 */
 	protected function keygen($length)
@@ -47,8 +47,8 @@ class RandomByteGenerator extends Generator
 		$hex = !is_bool($this->hex) ?: $this->hex;
 		$bytelength = $hex ? ceil($length / 2) : $length;
 
-		if (function_exists('mcrypt_create_iv')) {
-			$bytes = mcrypt_create_iv($bytelength, MCRYPT_DEV_URANDOM);
+		if (function_exists('random_bytes')) {
+			$bytes = random_bytes($bytelength);
 		}
 
 		elseif (function_exists('openssl_random_pseudo_bytes')) {
@@ -69,7 +69,7 @@ class RandomByteGenerator extends Generator
 	/**
 	 * Outputs a generated key including the prefix and suffix if any.
 	 * May also return transformed keys.
-	 * 
+	 *
 	 * @return string
 	 */
 	public function generate()
