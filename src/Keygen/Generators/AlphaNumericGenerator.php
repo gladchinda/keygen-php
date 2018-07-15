@@ -28,12 +28,15 @@ class AlphaNumericGenerator extends Generator
 		shuffle($chars);
 
 		$chars = str_shuffle(str_rot13(join('', $chars)));
-		$split = ceil($length / 5);
+		$split = intval(ceil($length / 5));
 		$size = strlen($chars);
 
 		$splitSize = ceil($size / $split);
 		$chunkSize = 5 + $splitSize + mt_rand(1, 5);
 		$chunkArray = array();
+
+		$chars = str_shuffle(str_repeat($chars, 2));
+		$size = strlen($chars);
 
 		while ($split != 0) {
 			$strip = substr($chars, mt_rand(0, $size - $chunkSize), $chunkSize);
@@ -42,9 +45,10 @@ class AlphaNumericGenerator extends Generator
 		}
 
 		foreach ($chunkArray as $set) {
-			$adjust = ((($length - strlen($key)) % 5) == 0) ? 5 : ($length - strlen($key)) % 5;
-			$setSize = strlen($set);
-			$key .= substr($set, mt_rand(0, $setSize - $adjust), $adjust);
+			$modulus = ($length - strlen($key)) % 5;
+			$adjusted = ($modulus > 0) ? $modulus : 5;
+
+			$key .= substr($set, mt_rand(0, strlen($set) - $adjusted), $adjusted);
 		}
 
 		return str_rot13(str_shuffle($key));
