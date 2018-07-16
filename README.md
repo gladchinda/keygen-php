@@ -11,7 +11,7 @@ Keygen is a PHP package that generates random character sequences known as *keys
 The Keygen package can be installed easily with [Composer] - require the `gladcodes/keygen` package from the command line.
 
 ```shell
-$ composer require gladcodes/keygen dev-v1.2.0-alpha
+$ composer require gladcodes/keygen dev-v2.0.0-alpha
 ```
 
 Alternatively, you can manually add the Keygen package to the `composer.json` file of your project and then run `composer install` from the command line as follows:
@@ -19,7 +19,7 @@ Alternatively, you can manually add the Keygen package to the `composer.json` fi
 ```json
 {
     "require": {
-        "gladcodes/keygen": "dev-v1.2.0-alpha"
+        "gladcodes/keygen": "dev-v2.0.0-alpha"
     }
 }
 ```
