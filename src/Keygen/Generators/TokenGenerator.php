@@ -24,7 +24,7 @@ class TokenGenerator extends Generator
 	protected function keygen($length)
 	{
 		$token = '';
-		$tokenlength = round($length * 3 / 4);
+		$tokenlength = round($length * 4 / 3);
 
 		for ($i = 0; $i < $tokenlength; ++$i) {
 			$token .= chr(rand(32,1024));
@@ -32,6 +32,6 @@ class TokenGenerator extends Generator
 
 		$token = base64_encode(str_shuffle($token));
 
-		return substr($token, -$length);
+		return substr($token, 0, $length);
 	}
 }
