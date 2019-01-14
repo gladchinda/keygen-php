@@ -1,5 +1,7 @@
 <?php
 
+namespace Keygen\Tests;
+
 use Keygen\Keygen;
 use PHPUnit\Framework\TestCase;
 use Keygen\Generators\NumericGenerator;
@@ -90,7 +92,7 @@ final class AbstractGeneratorTest extends TestCase
 	 * @covers ::__call
 	 * @covers Keygen\Traits\KeyManipulation::__overloadMethods
 	 * @covers Keygen\Traits\KeyManipulation::prefix
-	 * @covers Keygen\Traits\IntegerCasting::affix
+	 * @covers Keygen\Traits\KeyManipulation::affix
 	 */
 	public function testPrefixWithValidArgument()
 	{
@@ -111,7 +113,7 @@ final class AbstractGeneratorTest extends TestCase
 	 * @covers ::__call
 	 * @covers Keygen\Traits\KeyManipulation::__overloadMethods
 	 * @covers Keygen\Traits\KeyManipulation::prefix
-	 * @covers Keygen\Traits\IntegerCasting::affix
+	 * @covers Keygen\Traits\KeyManipulation::affix
 	 * @expectedException \InvalidArgumentException
 	 * @expectedExceptionMessage The given prefix cannot be converted to a string.
 	 */
@@ -124,7 +126,7 @@ final class AbstractGeneratorTest extends TestCase
 	 * @covers ::__call
 	 * @covers Keygen\Traits\KeyManipulation::__overloadMethods
 	 * @covers Keygen\Traits\KeyManipulation::suffix
-	 * @covers Keygen\Traits\IntegerCasting::affix
+	 * @covers Keygen\Traits\KeyManipulation::affix
 	 */
 	public function testSuffixWithValidArgument()
 	{
@@ -145,7 +147,7 @@ final class AbstractGeneratorTest extends TestCase
 	 * @covers ::__call
 	 * @covers Keygen\Traits\KeyManipulation::__overloadMethods
 	 * @covers Keygen\Traits\KeyManipulation::suffix
-	 * @covers Keygen\Traits\IntegerCasting::affix
+	 * @covers Keygen\Traits\KeyManipulation::affix
 	 * @expectedException \InvalidArgumentException
 	 * @expectedExceptionMessage The given suffix cannot be converted to a string.
 	 */

@@ -1,5 +1,7 @@
 <?php
 
+namespace Keygen\Tests;
+
 use PHPUnit\Framework\TestCase;
 use Keygen\Generators\AlphaNumericGenerator;
 
@@ -16,7 +18,7 @@ final class AlphaNumericGeneratorTest extends TestCase
 	}
 
 	/**
-	 * @covers ::keygen
+	 * @covers Keygen\Generator::keygen
 	 * @covers Keygen\Generator::generate
 	 */
 	public function testKeyGeneration()

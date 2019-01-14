@@ -1,5 +1,7 @@
 <?php
 
+namespace Keygen\Tests;
+
 use Keygen\GeneratorFactory;
 use PHPUnit\Framework\TestCase;
 use Keygen\Generators\TokenGenerator;

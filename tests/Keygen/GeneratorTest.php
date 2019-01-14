@@ -1,12 +1,14 @@
 <?php
 
+namespace Keygen\Tests;
+
 use Keygen\Generator;
 use PHPUnit\Framework\TestCase;
 use Keygen\Generators\NumericGenerator;
 
 /**
  * @coversDefaultClass Generator
- * @covers GeneratorInterface
+ * @covers Keygen\GeneratorInterface
  */
 final class GeneratorTest extends TestCase
 {
@@ -18,7 +20,7 @@ final class GeneratorTest extends TestCase
 	}
 
 	/**
-	 * @covers ::generate
+	 * @covers Keygen\GeneratorInterface::generate
 	 * @covers Keygen\Traits\KeyManipulation::getAdjustedKeyLength
 	 */
 	public function testGenerateMethod()

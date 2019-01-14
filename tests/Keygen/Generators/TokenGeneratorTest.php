@@ -1,5 +1,7 @@
 <?php
 
+namespace Keygen\Tests;
+
 use PHPUnit\Framework\TestCase;
 use Keygen\Generators\TokenGenerator;
 
@@ -16,7 +18,7 @@ final class TokenGeneratorTest extends TestCase
 	}
 
 	/**
-	 * @covers ::keygen
+	 * @covers Keygen\Generator::keygen
 	 * @covers Keygen\Generator::generate
 	 */
 	public function testKeyGeneration()

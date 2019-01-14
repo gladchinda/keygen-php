@@ -11,14 +11,22 @@
         }
     ],
     "require": {
-        "php": ">=5.4.0"
+        "php": ">=5.5.0"
+    },
+    "suggest": {
+        "ext-openssl": "It can help generator to get key with random bytes"
     },
     "autoload": {
         "psr-4": {
             "Keygen\\": "src/Keygen"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Keygen\\Tests\\": "tests/Keygen"
+        }
+    },
     "require-dev": {
-        "phpunit/phpunit": "^5.7"
+        "phpunit/phpunit": "^4.8 || ^5.7 || ^6.5"
     }
 }

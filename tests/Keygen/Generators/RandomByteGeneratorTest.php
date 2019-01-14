@@ -1,5 +1,7 @@
 <?php
 
+namespace Keygen\Tests;
+
 use PHPUnit\Framework\TestCase;
 use Keygen\Generators\RandomByteGenerator;
 
@@ -16,9 +18,8 @@ final class RandomByteGeneratorTest extends TestCase
 	}
 
 	/**
-	 * @covers ::hex
-	 * @covers ::keygen
-	 * @covers ::generate
+	 * @covers Keygen\Generators\RandomByteGenerator::hex
+	 * @covers Keygen\Generator::keygen
 	 * @covers Keygen\Generator::generate
 	 */
 	public function testKeyGeneration()

@@ -1,0 +1,12 @@
+<phpunit
+    bootstrap="vendor/autoload.php"
+    colors="true">
+    <testsuite name="Keygen">
+        <directory>tests/Keygen</directory>
+    </testsuite>
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">src/Keygen</directory>
+        </whitelist>
+    </filter>
+</phpunit>
