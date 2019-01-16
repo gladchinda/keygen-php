@@ -1,5 +1,7 @@
 <?php
 
+namespace Keygen\Tests;
+
 use Keygen\Keygen;
 use PHPUnit\Framework\TestCase;
 use Keygen\Generators\TokenGenerator;
@@ -31,9 +33,6 @@ final class KeygenTest extends TestCase
 	}
 
 	/**
-	 * @covers ::__call
-	 * @covers ::newGenerator
-	 * @covers ::newGeneratorFromAlias
 	 * @covers Keygen\GeneratorFactory::create
 	 * @covers Keygen\AbstractGenerator::__call
 	 * @covers Keygen\AbstractGenerator::__callStatic
@@ -62,9 +61,6 @@ final class KeygenTest extends TestCase
 	}
 
 	/**
-	 * @covers ::__call
-	 * @covers ::newGenerator
-	 * @covers ::newGeneratorFromAlias
 	 * @covers Keygen\GeneratorFactory::create
 	 * @covers Keygen\AbstractGenerator::__call
 	 * @covers Keygen\AbstractGenerator::__callStatic
